@@ -15,6 +15,9 @@ export type ExtractedRendererQueryData = {
   pending: string
 }
 
+/** Pulls the reply-eliciting queries out of `pending + data`, grouped by how they get answered:
+ *  stateless CSI, stateful CSI (CPR, DECRQM) and OSC 10/11 color queries. `pending` returns an
+ *  unfinished sequence at the end, to pass back in with the next chunk. */
 export function extractHiddenStartupRendererQueryData(
   data: string,
   pending: string
@@ -101,6 +104,8 @@ export function extractHiddenStartupRendererQueryData(
   return { statelessQueryData, statefulQueryData, oscColorQueryData, pending: '' }
 }
 
+/** True when `data` holds a complete CSI query the terminal answers, stateless or stateful. A CSI
+ *  cut short by the next ESC is skipped, so a query right after it still counts. */
 export function containsCsiRendererQuery(data: string): boolean {
   let offset = data.indexOf('\x1b[')
   while (offset !== -1) {
