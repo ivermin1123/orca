@@ -133,11 +133,17 @@ export function containsStatefulRendererQuery(data: string): boolean {
   return false
 }
 
+/** Last index of the CSI: its final byte, or the byte before an ESC/CAN/SUB that aborts it, as in
+ *  xterm's parser, so a carried partial CSI never takes the next sequence's `]` or `[` as its final.
+ *  -1 while the sequence is still open. */
 export function findCsiFinalByteIndex(data: string, offset: number): number {
   for (let index = offset; index < data.length; index++) {
     const code = data.charCodeAt(index)
     if (code >= 0x40 && code <= 0x7e) {
       return index
+    }
+    if (code === 0x1b || code === 0x18 || code === 0x1a) {
+      return index - 1
     }
   }
   return -1
