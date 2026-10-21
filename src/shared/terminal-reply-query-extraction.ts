@@ -117,6 +117,8 @@ export function containsCsiRendererQuery(data: string): boolean {
   return false
 }
 
+/** True when `data` holds a complete CPR or DECRQM query, whose reply depends on ordered terminal
+ *  state. A CSI cut short by the next ESC is skipped, so a query right after it still counts. */
 export function containsStatefulRendererQuery(data: string): boolean {
   let offset = data.indexOf('\x1b[')
   while (offset !== -1) {
