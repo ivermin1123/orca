@@ -68,21 +68,18 @@ describe('hidden query carry vs a following OSC', () => {
       return 'pty-id'
     })
     transportFactoryQueue.push(transport)
-    const getMainBufferSnapshot = window.api.pty.getMainBufferSnapshot as unknown as ReturnType<
-      typeof vi.fn
-    >
+    const getMainBufferSnapshot = vi.mocked(window.api.pty.getMainBufferSnapshot)
     getMainBufferSnapshot.mockResolvedValue(PROMPT_SNAPSHOT)
 
     const isVisibleRef = { current: false }
     const pane = createPane(1)
-    const binding = connectPanePty(
-      pane as never,
-      createManager(1) as never,
-      buildPaneConnectionDeps(() => mockStoreState, {
-        isVisibleRef,
-        startup: { command: 'claude' }
-      }) as never
-    )
+    const deps = buildPaneConnectionDeps(() => mockStoreState, {
+      isVisibleRef,
+      startup: { command: 'claude' }
+    })
+    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the fixtures implement the pane, manager and deps members connectPanePty reads.
+    const args = [pane, createManager(1), deps] as unknown as Parameters<typeof connectPanePty>
+    const binding = connectPanePty(...args)
     const rendered = new Terminal({ cols: 120, rows: 40, allowProposedApi: true })
     try {
       await flushAsyncTicks(6)
