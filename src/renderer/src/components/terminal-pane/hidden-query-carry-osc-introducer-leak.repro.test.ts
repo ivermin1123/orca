@@ -23,14 +23,7 @@ vi.mock('@/runtime/runtime-rpc-client', async (importOriginal) =>
   ).runtimeRpcClientWithLayoutApply(await importOriginal())
 )
 
-// A Claude Code pane shows `❯ 104;255` on its prompt after a tab switch, although the
-// PTY carried a well-formed `ESC ] 104 ; 255 BEL` (reset palette colour 255):
-// 1. A skipped hidden straggler ends inside a CSI (a redraw sliced mid-`ESC[38;2;…m`),
-//    so writeHiddenStartupRendererQueries keeps that partial CSI as the query carry.
-// 2. The reveal restore repaints from main's model but keeps that carry, so the next
-//    foreground chunk is read as its continuation: the CSI scan walks past the chunk's
-//    ESC and takes `]` as the final byte.
-// 3. Two bytes (`ESC ]`) are consumed, and xterm prints `104;255` at the cursor.
+// Why: a hidden carry ending mid-CSI must not swallow the next chunk's `ESC ]` (#31410).
 const HIDDEN_STRAGGLER_ENDING_MID_SGR = '\x1b[?2026h\x1b[H\x1b[38;2;177;1'
 const CLAUDE_PALETTE_RESET = '\x1b]104;255\x07'
 const PROMPT_SNAPSHOT = { data: '\x1b[H❯ ', cols: 120, rows: 40, seq: 1000 }

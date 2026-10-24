@@ -15,9 +15,6 @@ export type ExtractedRendererQueryData = {
   pending: string
 }
 
-/** Pulls the reply-eliciting queries out of `pending + data`, grouped by how they get answered:
- *  stateless CSI, stateful CSI (CPR, DECRQM) and OSC 10/11 color queries. `pending` returns an
- *  unfinished sequence at the end, to pass back in with the next chunk. */
 export function extractHiddenStartupRendererQueryData(
   data: string,
   pending: string
@@ -104,8 +101,6 @@ export function extractHiddenStartupRendererQueryData(
   return { statelessQueryData, statefulQueryData, oscColorQueryData, pending: '' }
 }
 
-/** True when `data` holds a complete CSI query the terminal answers, stateless or stateful. A CSI
- *  cut short by the next ESC is skipped, so a query right after it still counts. */
 export function containsCsiRendererQuery(data: string): boolean {
   let offset = data.indexOf('\x1b[')
   while (offset !== -1) {
@@ -122,8 +117,6 @@ export function containsCsiRendererQuery(data: string): boolean {
   return false
 }
 
-/** True when `data` holds a complete CPR or DECRQM query, whose reply depends on ordered terminal
- *  state. A CSI cut short by the next ESC is skipped, so a query right after it still counts. */
 export function containsStatefulRendererQuery(data: string): boolean {
   let offset = data.indexOf('\x1b[')
   while (offset !== -1) {
@@ -140,9 +133,7 @@ export function containsStatefulRendererQuery(data: string): boolean {
   return false
 }
 
-/** Last index of the CSI: its final byte, or the byte before an ESC/CAN/SUB that aborts it, as in
- *  xterm's parser, so a carried partial CSI never takes the next sequence's `]` or `[` as its final.
- *  -1 while the sequence is still open. */
+// Why: ESC/CAN/SUB abort a CSI (as in xterm), so a carried partial can't eat the next sequence's introducer.
 export function findCsiFinalByteIndex(data: string, offset: number): number {
   for (let index = offset; index < data.length; index++) {
     const code = data.charCodeAt(index)
